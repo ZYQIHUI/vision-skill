@@ -130,6 +130,11 @@ python scripts/vision.py config
 
 方式一:**环境变量**;方式二:项目根目录 **`.env` 文件**(`ZHIPU_API_KEY=xxx` / `VISION_MODEL=xxx` 每行一个,支持 `#` 注释)。显式环境变量优先于 `.env`。
 
+> **换视觉后端(OpenAI 兼容)**: 改 `VISION_API_BASE` + `VISION_MODEL` + 对应 key 即可,零代码改动。示例:
+> - SiliconFlow: `VISION_API_BASE=https://api.siliconflow.cn/v1` + `VISION_MODEL=Qwen/Qwen2.5-VL-7B-Instruct`
+> - 自部署 Ollama: `VISION_API_BASE=http://<服务器IP>:11434/v1` + `VISION_MODEL=qwen2.5-vl:7b`
+> - 阿里百炼: `VISION_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1` + `VISION_MODEL=qwen-vl-max`
+
 | 变量                  | 默认值                                 | 说明                   |
 | --------------------- | -------------------------------------- | ---------------------- |
 | `ZHIPU_API_KEY`       | (必填)                                 | open.bigmodel.cn 的 key |
@@ -140,7 +145,7 @@ python scripts/vision.py config
 | `VISION_TIMEOUT`      | `90`                                   | 请求超时(秒)          |
 | `VISION_REQUEST_INTERVAL` | `2.0`                              | 两次 API 调用最小间隔(秒), 降低 429 限流触发 |
 
-> **关于 429 限流**: GLM-4.6V-Flash 免费但限 1 并发且有分钟级频率额度。脚本已内置**请求节流**(两次调用间隔 ≥ `VISION_REQUEST_INTERVAL` 秒)与**智能重试**(尊重 `Retry-After` 头、指数退避 5s 起步封顶 60s)。连续手动测试时仍建议两次调用间稍留间隔。
+> **关于 429 限流**: GLM-4.6V-Flash 免费但限 1 并发且有分钟级频率额度。脚本已内置**请求节流**(两次调用间隔 ≥ `VISION_REQUEST_INTERVAL` 秒)与**智能重试**(尊重 `Retry-After` 头、指数退避 5s 起步封顶 60s)。连续手动测试时仍建议两次调用间稍留间隔。若 429 仍频繁,直接切换上方托管备选或自部署后端即可绕开该限制。
 
 ## 要求
 

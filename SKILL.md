@@ -77,6 +77,9 @@ Optional environment variables / 可选环境变量:
 - `VISION_MAX_TOKENS`: 覆盖最大输出 token(默认: 4096) / Override max output tokens (default: 4096)
 - `VISION_REQUEST_INTERVAL`: 两次 API 调用最小间隔秒数(默认: 2.0), 降低 429 限流 / Min interval between API calls in seconds (default: 2.0), reduces 429 rate limits
 
+换后端: 任意 OpenAI 兼容 VLM 端点均可, 改 `VISION_API_BASE` + `VISION_MODEL` 即可(如 SiliconFlow `https://api.siliconflow.cn/v1` + `Qwen/Qwen2.5-VL-7B-Instruct`, 或自部署 Ollama `http://<ip>:11434/v1` + `qwen2.5-vl:7b`)。
+Backend switch: any OpenAI-compatible VLM endpoint works — set `VISION_API_BASE` + `VISION_MODEL` (e.g. SiliconFlow, or self-hosted Ollama).
+
 ## Notes / 注意
 
 - GLM-4.6V-Flash 免费但限 1 并发 / Free with 1 concurrent request limit

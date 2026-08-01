@@ -67,6 +67,17 @@ def image_to_base64(image_path: str) -> str:
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
+# 扩展名 → MIME 类型 (data URL 前缀用, 不同 VLM 后端对 MIME 校验严格度不同)
+MIME_MAP = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".png": "image/png", ".webp": "image/webp",
+    ".bmp": "image/bmp", ".gif": "image/gif",
+    ".tiff": "image/tiff",
+}
+
+def mime_for(image_path: str) -> str:
+    return MIME_MAP.get(Path(image_path).suffix.lower(), "image/jpeg")
+
 def validate_image(image_path: str) -> None:
     if is_url(image_path):
         return
@@ -80,10 +91,13 @@ def validate_image(image_path: str) -> None:
         raise ValueError(f"Unsupported format: {ext}. Supported: {', '.join(sorted(SUPPORTED_FORMATS))}")
 
 def prepare_image_input(image_path: str) -> str:
+    """返回可直接放进 OpenAI 兼容请求的 image_url 值:
+    URL 原样返回; 本地图片返回带真实 MIME 的 data URL。
+    """
     validate_image(image_path)
     if is_url(image_path):
         return image_path
-    return image_to_base64(image_path)
+    return f"data:{mime_for(image_path)};base64,{image_to_base64(image_path)}"
 
 # ============================================================
 # Request Throttling — 降低免费模型 429 触发频率
@@ -127,7 +141,8 @@ def call_vision_api(image_input, prompt, max_tokens=None, temperature=None) -> s
     if is_url(image_input):
         image_url = image_input
     else:
-        image_url = f"data:image/jpeg;base64,{image_input}"
+        # 已是带真实 MIME 的 data URL (prepare_image_input 组装)
+        image_url = image_input
 
     payload = {
         "model": VISION_MODEL,

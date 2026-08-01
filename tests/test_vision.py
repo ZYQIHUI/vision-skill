@@ -156,6 +156,32 @@ def test_retry_wait():
     print("✅ test_retry_wait passed")
 
 
+def test_mime_data_url():
+    """测试本地图片生成带真实 MIME 的 data URL (换 OpenAI 兼容后端必需)"""
+    import base64
+    import tempfile
+    sys.path.insert(0, SCRIPT_DIR)
+    from vision import prepare_image_input, mime_for
+
+    assert mime_for("a.jpg") == "image/jpeg"
+    assert mime_for("a.JPG") == "image/jpeg"
+    assert mime_for("a.png") == "image/png"
+    assert mime_for("a.webp") == "image/webp"
+    assert mime_for("a.unknown") == "image/jpeg"  # 未知回退
+
+    # 最小 1x1 png
+    png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    with tempfile.TemporaryDirectory() as tmp:
+        p = os.path.join(tmp, "t.png")
+        with open(p, "wb") as f:
+            f.write(base64.b64decode(png_b64))
+        r = prepare_image_input(p)
+        assert r.startswith("data:image/png;base64,"), r[:40]
+        # URL 原样返回
+        assert prepare_image_input("https://x.com/a.png") == "https://x.com/a.png"
+    print("✅ test_mime_data_url passed")
+
+
 if __name__ == "__main__":
     test_config_command()
     test_missing_image()
@@ -164,4 +190,5 @@ if __name__ == "__main__":
     test_dotenv_env_priority()
     test_throttle_interval()
     test_retry_wait()
+    test_mime_data_url()
     print("\n所有测试通过! ✅")
