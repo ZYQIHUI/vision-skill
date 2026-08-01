@@ -17,6 +17,7 @@ import argparse
 import base64
 import json
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -26,7 +27,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import (
     API_BASE, API_KEY, VISION_MODEL,
-    MAX_TOKENS, TEMPERATURE, REQUEST_TIMEOUT,
+    MAX_TOKENS, TEMPERATURE, REQUEST_TIMEOUT, REQUEST_INTERVAL,
     MAX_IMAGE_SIZE_MB, MAX_IMAGE_DIMENSION, SUPPORTED_FORMATS,
     validate_config, get_config_summary,
 )
@@ -85,6 +86,35 @@ def prepare_image_input(image_path: str) -> str:
     return image_to_base64(image_path)
 
 # ============================================================
+# Request Throttling — 降低免费模型 429 触发频率
+# ============================================================
+
+_last_request_time = [0.0]  # 进程内节流状态 (list 以便闭包修改)
+
+
+def _throttle() -> None:
+    """保证两次 API 调用间隔 >= REQUEST_INTERVAL 秒。
+    GLM-4.6V-Flash 限 1 并发且有分钟级频率额度, 无间隔连发(尤其 deep 模式
+    6 次串行调用)极易触发 429; 在真正发请求前补齐间隔, 从源头降频。
+    """
+    now = time.monotonic()
+    need = REQUEST_INTERVAL - (now - _last_request_time[0])
+    if need > 0:
+        time.sleep(need)
+    _last_request_time[0] = time.monotonic()
+
+
+def _retry_wait(attempt: int, error_message: str) -> int:
+    """计算 429 重试等待秒数: 尊重服务器 Retry-After 头, 否则指数退避。
+    退避: 5s * 2^attempt, 封顶 60s (5/10/20/40/60)。
+    """
+    m = re.search(r"Retry-After[:=]?\s*(\d+)", error_message)
+    if m:
+        return min(int(m.group(1)), 60)
+    return min(5 * (2 ** attempt), 60)
+
+
+# ============================================================
 # API Client
 # ============================================================
 
@@ -92,6 +122,7 @@ def call_vision_api(image_input, prompt, max_tokens=None, temperature=None) -> s
     errors = validate_config()
     if errors:
         raise RuntimeError("; ".join(errors))
+    _throttle()  # 发请求前节流
 
     if is_url(image_input):
         image_url = image_input
@@ -123,7 +154,11 @@ def call_vision_api(image_input, prompt, max_tokens=None, temperature=None) -> s
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="replace")
         if e.code == 429:
-            raise RuntimeError("Rate limit hit (429). GLM-4.6V-Flash allows 1 concurrent request. Wait and retry.")
+            retry_after = e.headers.get("Retry-After") if e.headers else None
+            hint = f" Retry-After: {retry_after}s." if retry_after else ""
+            raise RuntimeError(
+                f"Rate limit hit (429).{hint} GLM-4.6V-Flash allows 1 concurrent request. Wait and retry."
+            )
         elif e.code == 401:
             raise RuntimeError("Authentication failed (401). Check your ZHIPU_API_KEY.")
         else:
@@ -141,7 +176,7 @@ def call_vision_with_retry(image_input, prompt, max_retries=3, **kwargs) -> str:
         except RuntimeError as e:
             last_error = e
             if "429" in str(e) or "Rate limit" in str(e):
-                wait = (attempt + 1) * 3
+                wait = _retry_wait(attempt, str(e))
                 print(f"[Retry {attempt+1}/{max_retries}] Rate limited, waiting {wait}s...", file=sys.stderr)
                 time.sleep(wait)
             else:

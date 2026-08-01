@@ -138,6 +138,9 @@ python scripts/vision.py config
 | `VISION_MAX_TOKENS`   | `4096`                                 | 最大输出 token         |
 | `VISION_TEMPERATURE`  | `0.2`                                  | 生成温度               |
 | `VISION_TIMEOUT`      | `90`                                   | 请求超时(秒)          |
+| `VISION_REQUEST_INTERVAL` | `2.0`                              | 两次 API 调用最小间隔(秒), 降低 429 限流触发 |
+
+> **关于 429 限流**: GLM-4.6V-Flash 免费但限 1 并发且有分钟级频率额度。脚本已内置**请求节流**(两次调用间隔 ≥ `VISION_REQUEST_INTERVAL` 秒)与**智能重试**(尊重 `Retry-After` 头、指数退避 5s 起步封顶 60s)。连续手动测试时仍建议两次调用间稍留间隔。
 
 ## 要求
 

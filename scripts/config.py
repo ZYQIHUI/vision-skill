@@ -74,6 +74,11 @@ MAX_TOKENS = int(os.environ.get("VISION_MAX_TOKENS", "4096"))
 TEMPERATURE = float(os.environ.get("VISION_TEMPERATURE", "0.2"))
 REQUEST_TIMEOUT = int(os.environ.get("VISION_TIMEOUT", "90"))
 
+# 请求最小间隔(秒) — 进程内节流, 降低免费模型 429 限流触发频率
+# GLM-4.6V-Flash 限 1 并发且有分钟级频率额度, 连续快速请求易触发 429。
+# 脚本保证两次 API 调用间隔 >= 此值; deep 模式 6 次串行调用自动受益。
+REQUEST_INTERVAL = float(os.environ.get("VISION_REQUEST_INTERVAL", "2.0"))
+
 # 图片限制(智谱 API 约束)
 MAX_IMAGE_SIZE_MB = 5
 MAX_IMAGE_DIMENSION = 6000

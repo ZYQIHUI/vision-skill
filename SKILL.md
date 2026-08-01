@@ -75,10 +75,12 @@ Optional environment variables / 可选环境变量:
 - `VISION_MODEL`: 覆盖视觉模型(默认: glm-4.6v-flash) / Override vision model (default: glm-4.6v-flash)
 - `VISION_API_BASE`: 覆盖 API 端点 / Override API endpoint
 - `VISION_MAX_TOKENS`: 覆盖最大输出 token(默认: 4096) / Override max output tokens (default: 4096)
+- `VISION_REQUEST_INTERVAL`: 两次 API 调用最小间隔秒数(默认: 2.0), 降低 429 限流 / Min interval between API calls in seconds (default: 2.0), reduces 429 rate limits
 
 ## Notes / 注意
 
 - GLM-4.6V-Flash 免费但限 1 并发 / Free with 1 concurrent request limit
+- 脚本内置请求节流 + 429 智能重试(指数退避, 尊重 Retry-After); 仍建议连续手动调用间稍留间隔 / Built-in throttling + smart 429 retry (exponential backoff, honors Retry-After); still keep a small gap between manual calls
 - 支持 JPG, PNG, WEBP, BMP, GIF, TIFF(最大 5MB, 6000x6000px)
 - API 兼容 OpenAI 格式(https://open.bigmodel.cn/api/paas/v4)
 - 输出始终为 JSON 到 stdout,便于可靠解析 / Output is always JSON to stdout for reliable parsing
