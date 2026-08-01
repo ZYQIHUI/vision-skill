@@ -1,0 +1,8 @@
+# scripts/requirements.txt
+#
+# 本 skill 仅使用 Python 标准库,无第三方包。
+# 要求 Python 3.8+,已在 Python 3.8/3.9/3.10/3.11/3.12 测试通过。
+#
+# 可选增强(均不强依赖):
+# requests>=2.28.0  # 更稳的 HTTP 错误处理(现在用 urllib 已足够)
+# Pillow>=9.0.0     # 图片超限时自动压缩/缩放再上传
