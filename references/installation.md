@@ -20,37 +20,37 @@ cd vision-skill
 ### For Claude Code
 
 ```bash
-mkdir -p ~/.claude/skills/glm-vision/scripts
-mkdir -p ~/.claude/skills/glm-vision/assets
+mkdir -p ~/.claude/skills/vision-skill/scripts
+mkdir -p ~/.claude/skills/vision-skill/assets
 
-cp SKILL.md ~/.claude/skills/glm-vision/
-cp scripts/vision.py ~/.claude/skills/glm-vision/scripts/
-cp scripts/config.py ~/.claude/skills/glm-vision/scripts/
-cp assets/prompts.json ~/.claude/skills/glm-vision/assets/
+cp SKILL.md ~/.claude/skills/vision-skill/
+cp scripts/vision.py ~/.claude/skills/vision-skill/scripts/
+cp scripts/config.py ~/.claude/skills/vision-skill/scripts/
+cp assets/prompts.json ~/.claude/skills/vision-skill/assets/
 ```
 
 ### For Codex / Kun
 
 ```bash
-mkdir -p ~/.codex/skills/glm-vision/scripts
-mkdir -p ~/.codex/skills/glm-vision/assets
+mkdir -p ~/.codex/skills/vision-skill/scripts
+mkdir -p ~/.codex/skills/vision-skill/assets
 
-cp SKILL.md ~/.codex/skills/glm-vision/
-cp scripts/vision.py ~/.codex/skills/glm-vision/scripts/
-cp scripts/config.py ~/.codex/skills/glm-vision/scripts/
-cp assets/prompts.json ~/.codex/skills/glm-vision/assets/
+cp SKILL.md ~/.codex/skills/vision-skill/
+cp scripts/vision.py ~/.codex/skills/vision-skill/scripts/
+cp scripts/config.py ~/.codex/skills/vision-skill/scripts/
+cp assets/prompts.json ~/.codex/skills/vision-skill/assets/
 ```
 
 ### For Cursor
 
 ```bash
-mkdir -p ~/.agents/skills/glm-vision/scripts
-mkdir -p ~/.agents/skills/glm-vision/assets
+mkdir -p ~/.agents/skills/vision-skill/scripts
+mkdir -p ~/.agents/skills/vision-skill/assets
 
-cp SKILL.md ~/.agents/skills/glm-vision/
-cp scripts/vision.py ~/.agents/skills/glm-vision/scripts/
-cp scripts/config.py ~/.agents/skills/glm-vision/scripts/
-cp assets/prompts.json ~/.agents/skills/glm-vision/assets/
+cp SKILL.md ~/.agents/skills/vision-skill/
+cp scripts/vision.py ~/.agents/skills/vision-skill/scripts/
+cp scripts/config.py ~/.agents/skills/vision-skill/scripts/
+cp assets/prompts.json ~/.agents/skills/vision-skill/assets/
 ```
 
 ### 项目级安装
@@ -83,7 +83,7 @@ VISION_MODEL=glm-4.6v-flash    # 可选,默认即此
 ## 验证安装
 
 ```bash
-python ~/.codex/skills/glm-vision/scripts/vision.py config
+python ~/.codex/skills/vision-skill/scripts/vision.py config
 ```
 
 如果看到 `"valid": true`,说明配置正确。
@@ -91,7 +91,7 @@ python ~/.codex/skills/glm-vision/scripts/vision.py config
 ## 测试
 
 ```bash
-python ~/.codex/skills/glm-vision/scripts/vision.py understand --image "test.jpg"
+python ~/.codex/skills/vision-skill/scripts/vision.py understand --image "test.jpg"
 ```
 
 重启 Agent 框架后,尝试让它分析一张图片。

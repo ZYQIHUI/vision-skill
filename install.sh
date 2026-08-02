@@ -60,7 +60,7 @@ else
   fi
 fi
 
-SKILL_NAME="glm-vision"
+SKILL_NAME="vision-skill"
 INSTALL_DIR="$SKILL_DIR/$SKILL_NAME"
 ok "安装到: $INSTALL_DIR"
 

@@ -1,5 +1,5 @@
 ---
-name: glm-vision
+name: vision-skill
 description: >
   国产大模型生态的视觉层 / Visual layer for Chinese LLM ecosystem.
   为纯文本 AI 模型提供深度图像理解能力 / Deep visual understanding for text-only models.
