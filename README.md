@@ -24,17 +24,17 @@
 
 | 文本 LLM(大脑)       | 视觉模型(眼睛)           | 成本      | 验证状态   |
 | --------------------- | ------------------------ | --------- | ---------- |
-| GLM-5.2               | Qwen/Qwen3.5-4B          | 按量极低  | ✅ verified |
-| DeepSeek-V3           | Qwen/Qwen3.5-4B          | 按量极低  | ✅ verified |
-| Qwen2.5-72B           | Qwen/Qwen3.5-4B          | 按量极低  | ⚠️ untested |
-| GPT-4o (text)         | Qwen/Qwen3.5-4B          | 按量极低  | ⚠️ untested |
-| Claude 3.5 (text)     | Qwen/Qwen3.5-4B          | 按量极低  | ⚠️ untested |
+| GLM-5.2               | Qwen/Qwen3.5-4B          | 免费      | ✅ verified |
+| DeepSeek-V3           | Qwen/Qwen3.5-4B          | 免费      | ✅ verified |
+| Qwen2.5-72B           | Qwen/Qwen3.5-4B          | 免费      | ⚠️ untested |
+| GPT-4o (text)         | Qwen/Qwen3.5-4B          | 免费      | ⚠️ untested |
+| Claude 3.5 (text)     | Qwen/Qwen3.5-4B          | 免费      | ⚠️ untested |
 
 `verified` 表示已在真实环境跑通端到端链路(understand + query 全通过);`untested` 表示架构兼容但尚未在真实环境验证。如实标注,不给全绿假象——欢迎社区补测试报告。
 
 ## 特性
 
-- **低成本** —— 默认模型 Qwen/Qwen3.5-4B 为 4B 小尺寸视觉多模态,按量计费极低(低于 Qwen3.5-27B 的 ¥0.60/百万 token 输入)
+- **免费** —— 默认模型 Qwen/Qwen3.5-4B 在硅基流动**免费**(输入/输出 tokens 均免费)
 - **多供应商** —— `VISION_PROVIDER` 一键切换:硅基流动(默认)/ 智谱(备用,GLM-4.6V-Flash 永久免费)
 - **零依赖** —— 纯 Python 标准库,无需 pip install
 - **跨框架** —— 任意 Agent Skills 兼容框架可用
@@ -98,7 +98,9 @@ cd vision-skill
 | 上下文               | 262,144 tokens                         |
 | 图片输入             | 支持 URL 或 base64(≤10MB)              |
 
-**费用**:Qwen/Qwen3.5-4B 按量计费,输入/输出分别计价(元/百万 tokens)。硅基流动公开定价页已披露的 Qwen3.5 系列价格:
+**费用**:Qwen/Qwen3.5-4B 在硅基流动**免费**——输入/输出 tokens 均不收费(控制台计费条目: `free-text-model.online.input-tokens` / `free-text-model.online.output-tokens`,即免费模型在线计费项)。仅受免费配额/限流约束。
+
+同系列其他规模模型仍按量计费(元/百万 tokens),仅供参考:
 
 | 模型               | 输入(元/M tokens) | 输出(元/M tokens) |
 | ------------------ | ----------------- | ----------------- |
@@ -106,13 +108,13 @@ cd vision-skill
 | Qwen3.5-122B-A10B  | 0.80              | 6.40              |
 | Qwen3.5-35B-A3B    | 0.40              | 3.20              |
 | Qwen3.5-27B        | 0.60              | 4.80              |
-| **Qwen3.5-4B**     | 更低(4B 小模型)    | 更低              |
+| **Qwen3.5-4B(默认)** | **免费**        | **免费**          |
 
-> ⚠️ **Qwen3.5-4B 的具体单价未在公开文档披露**,上表为其系列定价梯度参照(4B 显著低于 27B/35B)。准确数字请以 [cloud.siliconflow.cn](https://cloud.siliconflow.cn) 模型广场实时定价为准(需登录)。
+> 免费额度与限流规则以 [cloud.siliconflow.cn](https://cloud.siliconflow.cn) 控制台实时展示为准。
 
-**想完全免费?** 二选一:
+**想用其他模型?** 可选:
 - 切备用供应商: `.env` 中 `VISION_PROVIDER=zhipu` + `ZHIPU_API_KEY`,使用 **GLM-4.6V-Flash**(智谱永久免费,限 1 并发)
-- 硅基流动免费多模态模型(OCR/翻译类): `VISION_MODEL=PaddlePaddle/PaddleOCR-VL-1.5` 或 `tencent/Hunyuan-MT-7B`
+- 硅基流动其他多模态模型(OCR/翻译类): `VISION_MODEL=PaddlePaddle/PaddleOCR-VL-1.5` 或 `tencent/Hunyuan-MT-7B`
 
 > 注意:硅基流动的 `Qwen/Qwen2.5-VL-*` 免费系列已于 2026-03/04 下线,勿再使用。
 
