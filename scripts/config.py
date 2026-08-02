@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Configuration manager for GLM Vision Skill.
+Configuration manager for Vision Skill.
 All settings are controlled via environment variables with sensible defaults.
+Supports multiple vision API providers (SiliconFlow / Zhipu / custom via overrides).
 """
 
 import os
@@ -11,9 +12,11 @@ from pathlib import Path
 # .env File Loading — stdlib only (no python-dotenv)
 # ============================================================
 # 用户可在项目根目录放 .env 文件配置 API key 与模型:
-#   ZHIPU_API_KEY=your-key
-#   VISION_MODEL=glm-4.1v-thinking-flash
-# 优先级: 显式环境变量 > .env 文件 > 硬编码默认值。
+#   SILICONFLOW_API_KEY=your-key    # 硅基流动 (默认供应商)
+#   ZHIPU_API_KEY=your-key          # 智谱 (备用)
+#   VISION_PROVIDER=siliconflow     # 供应商切换 (siliconflow | zhipu)
+#   VISION_MODEL=Qwen/Qwen3.5-4B    # 模型覆盖
+# 优先级: 显式环境变量 > .env 文件 > 供应商预设默认值。
 # 零第三方依赖, 解析规则: KEY=VALUE 每行, 支持 # 注释与可选引号。
 
 def _find_dotenv() -> str:
@@ -51,23 +54,66 @@ def load_dotenv_file() -> None:
 load_dotenv_file()
 
 # ============================================================
-# API Configuration
+# Provider Registry — 供应商预设
+# ============================================================
+# 每个供应商: API 端点、API key 环境变量名、默认模型、图片限制。
+# 视觉请求统一走 OpenAI 兼容 /chat/completions 格式, 换供应商只换端点+key+模型。
+
+PROVIDERS = {
+    "siliconflow": {
+        "label": "硅基流动 (SiliconFlow)",
+        "home": "https://cloud.siliconflow.cn",
+        "api_base": "https://api.siliconflow.cn/v1",
+        "key_env": "SILICONFLOW_API_KEY",
+        # 主用视觉模型: Qwen/Qwen3.5-4B 为原生视觉多模态 (image-text-to-text),
+        # 小尺寸低成本; 注意 Qwen/Qwen2.5-VL-* 免费系列已于 2026-03/04 下线。
+        # 用 VISION_MODEL 覆盖为任意模型 ID:
+        #   Qwen/Qwen3.5-35B-A3B  (¥0.4/M 输入, 通用 VL)
+        #   Qwen/Qwen3-VL-32B-Instruct / zai-org/GLM-4.5V 等
+        "default_model": "Qwen/Qwen3.5-4B",
+        "max_image_size_mb": 10,
+        "max_image_dimension": 3584,  # Qwen 系 VL 最大支持 3584x3584
+    },
+    "zhipu": {
+        "label": "智谱开放平台 (Zhipu BigModel)",
+        "home": "https://open.bigmodel.cn",
+        "api_base": "https://open.bigmodel.cn/api/paas/v4",
+        "key_env": "ZHIPU_API_KEY",
+        "default_model": "glm-4.6v-flash",  # 永久免费, 128K 上下文, 限 1 并发
+        "max_image_size_mb": 5,
+        "max_image_dimension": 6000,
+    },
+}
+
+# ============================================================
+# Active Configuration — 显式环境变量 > 供应商预设
 # ============================================================
 
-# 智谱开放平台 API(免费注册: https://open.bigmodel.cn)
-API_BASE = os.environ.get(
-    "VISION_API_BASE",
-    "https://open.bigmodel.cn/api/paas/v4"
+# 供应商选择: VISION_PROVIDER=siliconflow|zhipu (默认 siliconflow, 以硅基流动为主)
+VISION_PROVIDER = os.environ.get("VISION_PROVIDER", "siliconflow").strip().lower()
+CONFIG_ERRORS: list = []  # 模块加载期的非致命配置错误, validate_config() 会合并上报
+if VISION_PROVIDER not in PROVIDERS:
+    CONFIG_ERRORS.append(
+        f"Unknown VISION_PROVIDER={VISION_PROVIDER!r}. "
+        f"Supported: {', '.join(sorted(PROVIDERS))}. "
+        "Or set VISION_API_BASE + VISION_API_KEY for a custom OpenAI-compatible endpoint."
+    )
+    VISION_PROVIDER = "siliconflow"  # 回退到默认供应商, 保证其余配置可加载
+_PROVIDER = PROVIDERS[VISION_PROVIDER]
+
+# API 端点 — 显式 VISION_API_BASE 优先, 否则用供应商预设
+API_BASE = os.environ.get("VISION_API_BASE", _PROVIDER["api_base"])
+
+# API Key — 读取优先级: VISION_API_KEY > 供应商专属 key 环境变量
+API_KEY = (
+    os.environ.get("VISION_API_KEY")
+    or os.environ.get(_PROVIDER["key_env"])
+    or ""
 )
+API_KEY_ENV = "VISION_API_KEY" if os.environ.get("VISION_API_KEY") else _PROVIDER["key_env"]
 
-# API Key — 从智谱开放平台获取
-API_KEY = os.environ.get("ZHIPU_API_KEY", "")
-
-# 视觉模型 — GLM-4.6V-Flash 永久免费, 128K上下文, 限1并发
-# 可选替代:
-#   glm-4.1v-thinking-flash  — 带思维链推理的视觉模型(也免费)
-#   glm-4v-plus              — 付费增强版
-VISION_MODEL = os.environ.get("VISION_MODEL", "glm-4.6v-flash")
+# 视觉模型 — 显式 VISION_MODEL 优先, 否则用供应商默认
+VISION_MODEL = os.environ.get("VISION_MODEL", _PROVIDER["default_model"])
 
 # 生成参数
 MAX_TOKENS = int(os.environ.get("VISION_MAX_TOKENS", "20000"))
@@ -75,13 +121,12 @@ TEMPERATURE = float(os.environ.get("VISION_TEMPERATURE", "0.2"))
 REQUEST_TIMEOUT = int(os.environ.get("VISION_TIMEOUT", "90"))
 
 # 请求最小间隔(秒) — 进程内节流, 降低免费模型 429 限流触发频率
-# GLM-4.6V-Flash 限 1 并发且有分钟级频率额度, 连续快速请求易触发 429。
 # 脚本保证两次 API 调用间隔 >= 此值; deep 模式 6 次串行调用自动受益。
 REQUEST_INTERVAL = float(os.environ.get("VISION_REQUEST_INTERVAL", "2.0"))
 
-# 图片限制(智谱 API 约束)
-MAX_IMAGE_SIZE_MB = 5
-MAX_IMAGE_DIMENSION = 6000
+# 图片限制(按供应商)
+MAX_IMAGE_SIZE_MB = _PROVIDER["max_image_size_mb"]
+MAX_IMAGE_DIMENSION = _PROVIDER["max_image_dimension"]
 
 # 支持的图片格式
 SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
@@ -89,11 +134,12 @@ SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
 
 def validate_config() -> list:
     """验证配置是否完整, 返回错误信息列表"""
-    errors = []
+    errors = list(CONFIG_ERRORS)
     if not API_KEY:
         errors.append(
-            "ZHIPU_API_KEY is not set. "
-            "Get a free key at https://open.bigmodel.cn"
+            f"{API_KEY_ENV} is not set for provider {VISION_PROVIDER} "
+            f"({_PROVIDER['label']}). Get a key at {_PROVIDER['home']} "
+            f"and set it in .env or as an environment variable."
         )
     if not API_BASE:
         errors.append("VISION_API_BASE is not set.")
@@ -103,10 +149,13 @@ def validate_config() -> list:
 def get_config_summary() -> dict:
     """返回当前配置摘要(用于调试)"""
     return {
+        "provider": VISION_PROVIDER,
+        "provider_label": _PROVIDER["label"],
         "api_base": API_BASE,
         "model": VISION_MODEL,
         "max_tokens": MAX_TOKENS,
         "temperature": TEMPERATURE,
+        "api_key_env": API_KEY_ENV,
         "api_key_set": bool(API_KEY),
         "api_key_preview": f"{API_KEY[:8]}..." if API_KEY else "NOT SET",
     }
