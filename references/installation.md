@@ -1,9 +1,10 @@
-# 安装指南 — GLM Vision Skill
+# 安装指南 — Vision Skill
 
 ## 前置要求
 
 1. **Python 3.8+** — 检查: `python3 --version`
-2. **智谱 API Key** — 免费获取: [open.bigmodel.cn](https://open.bigmodel.cn)
+2. **硅基流动 API Key** — 免费注册: [cloud.siliconflow.cn](https://cloud.siliconflow.cn)(默认供应商)
+   - 备用供应商(可选): 智谱 key — [open.bigmodel.cn](https://open.bigmodel.cn)
 
 ## 选项 A: 一键安装(推荐)
 
@@ -27,6 +28,7 @@ cp SKILL.md ~/.claude/skills/vision-skill/
 cp scripts/vision.py ~/.claude/skills/vision-skill/scripts/
 cp scripts/config.py ~/.claude/skills/vision-skill/scripts/
 cp assets/prompts.json ~/.claude/skills/vision-skill/assets/
+cp .env.example ~/.claude/skills/vision-skill/
 ```
 
 ### For Codex / Kun
@@ -39,6 +41,7 @@ cp SKILL.md ~/.codex/skills/vision-skill/
 cp scripts/vision.py ~/.codex/skills/vision-skill/scripts/
 cp scripts/config.py ~/.codex/skills/vision-skill/scripts/
 cp assets/prompts.json ~/.codex/skills/vision-skill/assets/
+cp .env.example ~/.codex/skills/vision-skill/
 ```
 
 ### For Cursor
@@ -51,6 +54,7 @@ cp SKILL.md ~/.agents/skills/vision-skill/
 cp scripts/vision.py ~/.agents/skills/vision-skill/scripts/
 cp scripts/config.py ~/.agents/skills/vision-skill/scripts/
 cp assets/prompts.json ~/.agents/skills/vision-skill/assets/
+cp .env.example ~/.agents/skills/vision-skill/
 ```
 
 ### 项目级安装
@@ -59,26 +63,32 @@ cp assets/prompts.json ~/.agents/skills/vision-skill/assets/
 
 ## 设置 API Key
 
+默认供应商为**硅基流动**,主用模型 `Qwen/Qwen3.5-4B`(免费,输入/输出 ¥0.000000/K tokens)。
+
 方式一:环境变量
 
 ```bash
 # Linux / macOS
-echo 'export ZHIPU_API_KEY="your-key-here"' >> ~/.bashrc
+echo 'export SILICONFLOW_API_KEY="your-key-here"' >> ~/.bashrc
+echo 'export VISION_PROVIDER="siliconflow"' >> ~/.bashrc   # 可选,默认即此
 source ~/.bashrc
 
 # Windows PowerShell
-[System.Environment]::SetEnvironmentVariable("ZHIPU_API_KEY", "your-key-here", "User")
+[System.Environment]::SetEnvironmentVariable("SILICONFLOW_API_KEY", "your-key-here", "User")
 ```
 
 方式二:项目根目录 `.env` 文件(推荐本地开发,已被 `.gitignore` 忽略)
 
 ```bash
-# 在 vision-skill/ 根目录创建 .env
-ZHIPU_API_KEY=your-key-here
-VISION_MODEL=glm-4.6v-flash    # 可选,默认即此
+# 在 vision-skill/ 根目录创建 .env(可 cp .env.example .env)
+VISION_PROVIDER=siliconflow
+SILICONFLOW_API_KEY=your-key-here
+VISION_MODEL=Qwen/Qwen3.5-4B    # 可选,默认即此
 ```
 
-`.env` 支持 `#` 注释与可选引号(`KEY="value"`)。显式环境变量优先于 `.env`;模型用 `VISION_MODEL` 配置,默认为 `glm-4.6v-flash`。
+`.env` 支持 `#` 注释与可选引号(`KEY="value"`)。显式环境变量优先于 `.env`;模型用 `VISION_MODEL` 配置,默认按供应商(`Qwen/Qwen3.5-4B` / 智谱 `glm-4.6v-flash`)。
+
+**切备用供应商(智谱)**: 将 `VISION_PROVIDER` 改为 `zhipu` 并设置 `ZHIPU_API_KEY=your-key`,模型默认 `glm-4.6v-flash`(永久免费)。
 
 ## 验证安装
 
@@ -86,7 +96,7 @@ VISION_MODEL=glm-4.6v-flash    # 可选,默认即此
 python ~/.codex/skills/vision-skill/scripts/vision.py config
 ```
 
-如果看到 `"valid": true`,说明配置正确。
+如果看到 `"valid": true` 且 `"provider": "siliconflow"`,说明配置正确。
 
 ## 测试
 

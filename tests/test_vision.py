@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-基础测试 — GLM Vision Skill
+基础测试 — Vision Skill
 运行: python tests/test_vision.py
-需要设置 ZHIPU_API_KEY 才能跑 API 相关测试。
+需要设置 SILICONFLOW_API_KEY(默认供应商)或 ZHIPU_API_KEY 才能跑 API 相关测试。
 """
 
 import json
@@ -68,9 +68,9 @@ def test_parse_json_response():
 
 
 def _clean_env():
-    """清除 ZHIPU_*/VISION_* 环境变量, 避免干扰 .env 测试"""
+    """清除 ZHIPU_/SILICONFLOW_/VISION_* 环境变量, 避免干扰 .env 测试"""
     return {k: v for k, v in os.environ.items()
-            if not k.startswith(("ZHIPU_", "VISION_"))}
+            if not k.startswith(("ZHIPU_", "SILICONFLOW_", "VISION_"))}
 
 
 def _run_config_with_dotenv(dotenv_content, extra_env=None):
@@ -96,26 +96,42 @@ def _run_config_with_dotenv(dotenv_content, extra_env=None):
 
 
 def test_dotenv_config():
-    """测试 .env 文件配置 key/model 生效"""
+    """测试 .env 文件配置 key/model 生效(默认供应商 siliconflow)"""
     result = _run_config_with_dotenv(
         "# comment line\n"
-        'ZHIPU_API_KEY="dotenv-key-123"\n'
+        "VISION_PROVIDER=siliconflow\n"
+        'SILICONFLOW_API_KEY="dotenv-key-123"\n'
         "VISION_MODEL=glm-dotenv-model\n"
     )
     assert result.returncode == 0, result.stderr
     data = json.loads(result.stdout)
     cfg = data["config"]
+    assert cfg["provider"] == "siliconflow", cfg
     assert cfg["model"] == "glm-dotenv-model", cfg
     assert cfg["api_key_preview"] == "dotenv-k...", cfg
     assert data["valid"] is True, data
     print("✅ test_dotenv_config passed")
 
 
+def test_dotenv_config_zhipu():
+    """测试 .env 中 VISION_PROVIDER=zhipu 切换备用供应商"""
+    result = _run_config_with_dotenv(
+        "VISION_PROVIDER=zhipu\n"
+        'ZHIPU_API_KEY="zhipu-key-456"\n'
+    )
+    assert result.returncode == 0, result.stderr
+    cfg = json.loads(result.stdout)["config"]
+    assert cfg["provider"] == "zhipu", cfg
+    assert cfg["api_key_preview"] == "zhipu-ke...", cfg
+    assert cfg["model"] == "glm-4.6v-flash", cfg  # 智谱默认模型
+    print("✅ test_dotenv_config_zhipu passed")
+
+
 def test_dotenv_env_priority():
     """测试显式环境变量优先于 .env"""
     result = _run_config_with_dotenv(
-        "VISION_MODEL=glm-dotenv-model\n",
-        extra_env={"VISION_MODEL": "glm-explicit-model", "ZHIPU_API_KEY": "explicit-key"},
+        "VISION_PROVIDER=siliconflow\nVISION_MODEL=glm-dotenv-model\n",
+        extra_env={"VISION_MODEL": "glm-explicit-model", "SILICONFLOW_API_KEY": "explicit-key"},
     )
     assert result.returncode == 0, result.stderr
     cfg = json.loads(result.stdout)["config"]
@@ -187,6 +203,7 @@ if __name__ == "__main__":
     test_missing_image()
     test_parse_json_response()
     test_dotenv_config()
+    test_dotenv_config_zhipu()
     test_dotenv_env_priority()
     test_throttle_interval()
     test_retry_wait()

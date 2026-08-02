@@ -9,6 +9,12 @@ import os
 from pathlib import Path
 
 # ============================================================
+# Version
+# ============================================================
+
+__version__ = "2.0.0"
+
+# ============================================================
 # .env File Loading — stdlib only (no python-dotenv)
 # ============================================================
 # 用户可在项目根目录放 .env 文件配置 API key 与模型:
@@ -73,6 +79,7 @@ PROVIDERS = {
         "default_model": "Qwen/Qwen3.5-4B",
         "max_image_size_mb": 10,
         "max_image_dimension": 3584,  # Qwen 系 VL 最大支持 3584x3584
+        "concurrent_requests": None,  # 硅基流动无固定 1 并发限制
     },
     "zhipu": {
         "label": "智谱开放平台 (Zhipu BigModel)",
@@ -82,6 +89,7 @@ PROVIDERS = {
         "default_model": "glm-4.6v-flash",  # 永久免费, 128K 上下文, 限 1 并发
         "max_image_size_mb": 5,
         "max_image_dimension": 6000,
+        "concurrent_requests": 1,
     },
 }
 
@@ -128,6 +136,9 @@ REQUEST_INTERVAL = float(os.environ.get("VISION_REQUEST_INTERVAL", "2.0"))
 MAX_IMAGE_SIZE_MB = _PROVIDER["max_image_size_mb"]
 MAX_IMAGE_DIMENSION = _PROVIDER["max_image_dimension"]
 
+# 并发限制(按供应商; None 表示无固定限制)
+CONCURRENT_REQUESTS = _PROVIDER.get("concurrent_requests")
+
 # 支持的图片格式
 SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
 
@@ -149,6 +160,7 @@ def validate_config() -> list:
 def get_config_summary() -> dict:
     """返回当前配置摘要(用于调试)"""
     return {
+        "version": __version__,
         "provider": VISION_PROVIDER,
         "provider_label": _PROVIDER["label"],
         "api_base": API_BASE,

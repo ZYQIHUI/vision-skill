@@ -7,6 +7,7 @@ description: >
   当用户提供图片(路径或 URL)并要求理解、分析、描述、识别、推理、提取文字、回答关于图片的问题时触发 / Activate when the user provides an image (file path or URL) and asks to understand, analyze, describe, recognize, reason about, or extract text from it.
   兼容任何遵循 Agent Skills 开放标准的框架 / Works with any Agent framework following the Agent Skills open standard.
 license: MIT
+version: 2.0.0
 ---
 
 # Vision Skill

@@ -74,7 +74,7 @@
   },
   "scene_graph": {
     "description": "场景图提取",
-    "prompt": "分析这张图片,生成场景图,输出有效 JSON。\n格式:\n{\n  \"objects\": [\n    {\"id\": 1, \"name\": \"对象名称\", \"attributes\": [\"属性1\", \"属性2\"]}\n  ],\n  \"relationships\": [\n    {\"subject\": 1, \"predicate\": \"空间关系\", \"object\": 2}\n  ],\n  \"scene_type\": \"场景类型\",\n  \"setting_details\": \"环境简述\"\n}\n只返回 JSON,第一个字符必须是 {。",
+    "prompt": "分析这张图片,生成场景图,输出有效 JSON。\n格式:\n{\n  \"objects\": [\n    {\"id\": 1, \"name\": \"对象名称\", \"attributes\": [\"属性1\", \"属性2\"]}\n  ],\n  \"relationships\": [\n    {\"subject\": 1, \"predicate\": \"空间关系\", \"object\": 2}\n  ],\n  \"scene_type\": \"场景类型\",\n  \"setting_details\": \"环境简述\"\n}\n只返回 JSON,第一个字符必须是 {。"
   },
   "spatial": {
     "description": "空间布局描述",

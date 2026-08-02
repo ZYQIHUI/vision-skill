@@ -1,4 +1,4 @@
-# 框架适配矩阵 — GLM Vision Skill
+# 框架适配矩阵 — Vision Skill
 
 本文件记录各 Agent 框架对本 skill 的实际适配状态。`verified` = 已在真实环境跑通端到端;`untested` = 架构兼容但尚未真实验证;`incompatible` = 已知不兼容(若有)。
 
@@ -15,14 +15,16 @@
 
 ## 上游文本 LLM 组合适配
 
+视觉模型默认 `Qwen/Qwen3.5-4B`(硅基流动,免费);备用 `GLM-4.6V-Flash`(智谱,免费)。以下为文本 LLM × 默认视觉模型的组合:
+
 | 文本 LLM       | 视觉模型         | 上下文    | 端到端 | 状态         |
 | -------------- | ---------------- | --------- | ------ | ------------ |
-| GLM-5.2        | GLM-4.6V-Flash   | 128K      | ✅     | ✅ verified  |
-| DeepSeek-V3    | GLM-4.6V-Flash   | 128K      | ✅     | ✅ verified  |
-| Qwen2.5-72B    | GLM-4.6V-Flash   | 128K      | ?      | ⚠️ untested  |
-| GPT-4o (text)  | GLM-4.6V-Flash   | 128K      | ?      | ⚠️ untested  |
-| Claude 3.5     | GLM-4.6V-Flash   | 200K      | ?      | ⚠️ untested  |
-| 8K 部署任意模型 | GLM-4.6V-Flash   | 8K        | ⚠️     | ⚠️ 易截断    |
+| GLM-5.2        | Qwen/Qwen3.5-4B  | 128K      | ✅     | ✅ verified  |
+| DeepSeek-V3    | Qwen/Qwen3.5-4B  | 128K      | ✅     | ✅ verified  |
+| Qwen2.5-72B    | Qwen/Qwen3.5-4B  | 128K      | ?      | ⚠️ untested  |
+| GPT-4o (text)  | Qwen/Qwen3.5-4B  | 128K      | ?      | ⚠️ untested  |
+| Claude 3.5     | Qwen/Qwen3.5-4B  | 200K      | ?      | ⚠️ untested  |
+| 8K 部署任意模型 | Qwen/Qwen3.5-4B  | 8K        | ⚠️     | ⚠️ 易截断    |
 
 ## 如何补 verified
 

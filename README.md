@@ -1,8 +1,10 @@
 # Vision Skill 🖼️🧠
 
+> **v2.0.0** — 第二版:默认供应商切换为**硅基流动**,主用免费模型 `Qwen/Qwen3.5-4B`(输入/输出 ¥0.000000/K tokens);支持 `VISION_PROVIDER` 一键切回智谱备用。
+
 > 国产大模型生态的开源视觉层 —— 任意国产文本模型 + 视觉模型,一行命令接入。
 
-一个即插即用 **Agent Skill**,把纯文本 LLM(GLM-5.2、DeepSeek、Qwen、GPT 等)与视觉模型桥接起来。默认供应商为**硅基流动(SiliconFlow)**,主用模型 **Qwen/Qwen3.5-4B**(原生视觉多模态,支持图像/视频/文本);亦可一键切回**智谱 GLM-4.6V-Flash**(永久免费)作为备用。遵循 Agent Skills 开放标准,兼容 Claude Code、Codex、Cursor、OpenCode 等所有支持 SKILL.md 的框架;框架不支持该标准时,脚本仍可作为普通 CLI 由调用方手动触发。
+一个即插即用 **Agent Skill**,把纯文本 LLM(GLM-5.2、DeepSeek、Qwen、GPT 等)与视觉模型桥接起来。默认供应商为**硅基流动(SiliconFlow)**,主用模型 **Qwen/Qwen3.5-4B**(原生视觉多模态);亦可一键切回**智谱 GLM-4.6V-Flash**(永久免费)作为备用。遵循 Agent Skills 开放标准,兼容 Claude Code、Codex、Cursor、OpenCode 等所有支持 SKILL.md 的框架;框架不支持该标准时,脚本仍可作为普通 CLI 由调用方手动触发。
 
 ## 为什么需要它
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-GLM Vision Skill — Bridge text-only LLMs with visual understanding.
+Vision Skill — Bridge text-only LLMs with visual understanding.
 
 Usage:
     python vision.py understand --image "photo.jpg" [--mode fast|deep]
@@ -9,7 +9,9 @@ Usage:
 
 Requires:
     - Python 3.8+
-    - ZHIPU_API_KEY environment variable (free: https://open.bigmodel.cn)
+    - An API key for the selected provider (default SiliconFlow, switch with VISION_PROVIDER):
+        SILICONFLOW_API_KEY=...  # provider: siliconflow (default, https://cloud.siliconflow.cn)
+        ZHIPU_API_KEY=...        # provider: zhipu (https://open.bigmodel.cn)
     - No third-party packages required (uses only stdlib)
 """
 
@@ -26,7 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import (
-    API_BASE, API_KEY, VISION_MODEL, VISION_PROVIDER,
+    API_BASE, API_KEY, VISION_MODEL, VISION_PROVIDER, API_KEY_ENV, CONCURRENT_REQUESTS,
     MAX_TOKENS, TEMPERATURE, REQUEST_TIMEOUT, REQUEST_INTERVAL,
     MAX_IMAGE_SIZE_MB, MAX_IMAGE_DIMENSION, SUPPORTED_FORMATS,
     validate_config, get_config_summary,
@@ -108,7 +110,7 @@ _last_request_time = [0.0]  # 进程内节流状态 (list 以便闭包修改)
 
 def _throttle() -> None:
     """保证两次 API 调用间隔 >= REQUEST_INTERVAL 秒。
-    GLM-4.6V-Flash 限 1 并发且有分钟级频率额度, 无间隔连发(尤其 deep 模式
+    免费/限流模型(如智谱 GLM-4.6V-Flash 限 1 并发)无间隔连发(尤其 deep 模式
     6 次串行调用)极易触发 429; 在真正发请求前补齐间隔, 从源头降频。
     """
     now = time.monotonic()
@@ -176,10 +178,14 @@ def call_vision_api(image_input, prompt, max_tokens=None, temperature=None) -> s
             retry_after = e.headers.get("Retry-After") if e.headers else None
             hint = f" Retry-After: {retry_after}s." if retry_after else ""
             raise RuntimeError(
-                f"Rate limit hit (429).{hint} GLM-4.6V-Flash allows 1 concurrent request. Wait and retry."
+                f"Rate limit hit (429).{hint} Provider '{VISION_PROVIDER}' "
+                f"limits concurrent requests. Wait and retry."
             )
         elif e.code == 401:
-            raise RuntimeError("Authentication failed (401). Check your ZHIPU_API_KEY.")
+            raise RuntimeError(
+                f"Authentication failed (401). Check your {API_KEY_ENV} "
+                f"(provider: {VISION_PROVIDER})."
+            )
         else:
             raise RuntimeError(f"API error {e.code}: {error_body}")
     except urllib.error.URLError as e:
@@ -284,7 +290,9 @@ def cmd_understand(args):
         layers = {}
         for field_name, prompt_key, tokens, temp in tasks:
             print(f"[Deep] Extracting {field_name}...", file=sys.stderr)
-            prompt = prompts[prompt_key]["prompt"]
+            prompt = prompts.get(prompt_key, {}).get("prompt", "")
+            if not prompt:
+                raise ValueError(f"Missing prompt template: {prompt_key} (check assets/prompts.json)")
             raw = call_vision_with_retry(image_input, prompt, max_tokens=tokens, temperature=temp)
             if field_name == "scene_graph":
                 layers[field_name] = parse_json_response(raw)
@@ -343,7 +351,7 @@ def cmd_config(args):
         "valid": len(errors) == 0,
         "errors": errors if errors else None,
         "supported_formats": sorted(SUPPORTED_FORMATS),
-        "limits": {"max_image_size_mb": MAX_IMAGE_SIZE_MB, "max_image_dimension": MAX_IMAGE_DIMENSION, "concurrent_requests": 1},
+        "limits": {"max_image_size_mb": MAX_IMAGE_SIZE_MB, "max_image_dimension": MAX_IMAGE_DIMENSION, "concurrent_requests": CONCURRENT_REQUESTS},
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
 
@@ -354,7 +362,7 @@ def cmd_config(args):
 def main():
     parser = argparse.ArgumentParser(
         prog="vision.py",
-        description="GLM Vision Skill — Visual understanding for text-only LLMs",
+        description="Vision Skill — Visual understanding for text-only LLMs",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

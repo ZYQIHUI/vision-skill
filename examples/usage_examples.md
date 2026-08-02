@@ -1,4 +1,4 @@
-# 使用示例 — GLM Vision Skill
+# 使用示例 — Vision Skill
 
 ## 示例 1: 快速理解一张照片
 
@@ -42,18 +42,27 @@ python scripts/vision.py config
 
 ## 示例 6: 用 .env 配置 key 与模型
 
-在项目根目录创建 `.env`(已被 `.gitignore` 忽略):
+在项目根目录创建 `.env`(已被 `.gitignore` 忽略,可 `cp .env.example .env`):
 
 ```bash
-ZHIPU_API_KEY=your-key-here
-VISION_MODEL=glm-4.1v-thinking-flash   # 换用带思维链的免费视觉模型
+VISION_PROVIDER=siliconflow
+SILICONFLOW_API_KEY=your-key-here
+VISION_MODEL=Qwen/Qwen3.5-4B   # 可选,默认即此(硅基流动,免费)
 ```
 
 然后直接运行,无需 export:
 
 ```bash
-python scripts/vision.py config        # 应显示 model=glm-4.1v-thinking-flash
+python scripts/vision.py config        # 应显示 provider=siliconflow, model=Qwen/Qwen3.5-4B
 python scripts/vision.py understand --image "photo.jpg"
 ```
 
 显式设置的环境变量优先于 `.env`,两者都设时以环境变量为准。
+
+## 示例 7: 切换备用供应商(智谱)
+
+```bash
+VISION_PROVIDER=zhipu
+ZHIPU_API_KEY=your-key-here
+# VISION_MODEL=glm-4.6v-flash   # 可选,默认即此(永久免费)
+```
