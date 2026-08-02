@@ -98,7 +98,7 @@ cd vision-skill
 | 上下文               | 262,144 tokens                         |
 | 图片输入             | 支持 URL 或 base64(≤10MB)              |
 
-**费用**:Qwen/Qwen3.5-4B 在硅基流动**免费**——输入/输出 tokens 均不收费(控制台计费条目: `free-text-model.online.input-tokens` / `free-text-model.online.output-tokens`,即免费模型在线计费项)。仅受免费配额/限流约束。
+**费用**:Qwen/Qwen3.5-4B 在硅基流动**免费**——控制台价格页显示输入/输出均为 **¥0.000000 / K Tokens**(计费条目: `free-text-model.online.input-tokens` / `free-text-model.online.output-tokens`)。仅受免费配额/限流约束。
 
 同系列其他规模模型仍按量计费(元/百万 tokens),仅供参考:
 
