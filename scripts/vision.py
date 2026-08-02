@@ -26,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import (
-    API_BASE, API_KEY, VISION_MODEL,
+    API_BASE, API_KEY, VISION_MODEL, VISION_PROVIDER,
     MAX_TOKENS, TEMPERATURE, REQUEST_TIMEOUT, REQUEST_INTERVAL,
     MAX_IMAGE_SIZE_MB, MAX_IMAGE_DIMENSION, SUPPORTED_FORMATS,
     validate_config, get_config_summary,
@@ -156,6 +156,10 @@ def call_vision_api(image_input, prompt, max_tokens=None, temperature=None) -> s
         "max_tokens": max_tokens or MAX_TOKENS,
         "temperature": temperature if temperature is not None else TEMPERATURE,
     }
+    # Qwen 系 reasoning 模型会先输出超长思维链, 吃光 max_tokens 预算导致 content 为空;
+    # 硅基流动支持 enable_thinking=false 关闭推理, 直接输出答案 (更快更省)。
+    if VISION_PROVIDER == "siliconflow":
+        payload["enable_thinking"] = False
 
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
@@ -250,13 +254,21 @@ def cmd_understand(args):
                 + json.dumps(few_shot["example_output"], ensure_ascii=False, indent=2)
                 + "\n\n" + prompt
             )
-        raw = call_vision_with_retry(image_input, prompt, max_tokens=4096, temperature=0.2)
+        raw = None
+        understanding = None
+        for attempt in range(2):  # JSON 解析失败自动重试 (非 thinking 模型输出偶发不规范)
+            raw = call_vision_with_retry(image_input, prompt, max_tokens=4096, temperature=0.2)
+            understanding = parse_json_response(raw)
+            if understanding["parsed"]:
+                break
+            print(f"[Understand] JSON parse failed, retrying (attempt {attempt+1}/2)...", file=sys.stderr)
         result = {
             "success": True,
             "mode": "fast",
             "image": args.image,
+            "provider": VISION_PROVIDER,
             "model": VISION_MODEL,
-            "understanding": parse_json_response(raw),
+            "understanding": understanding,
             "hint": "如 understanding.parsed 为 False,建议改用 --mode deep 单维度分析",
         }
 
@@ -283,6 +295,7 @@ def cmd_understand(args):
             "success": True,
             "mode": "deep",
             "image": args.image,
+            "provider": VISION_PROVIDER,
             "model": VISION_MODEL,
             "layer1_visual_extraction": {
                 "scene_graph": layers.get("scene_graph", {}),
@@ -307,10 +320,11 @@ def cmd_query(args):
     image_input = prepare_image_input(args.image)
     template = prompts["query"]["template"]
     prompt = template.replace("{question}", args.question)
-    raw = call_vision_with_retry(image_input, prompt, max_tokens=512, temperature=0.1)
+    raw = call_vision_with_retry(image_input, prompt, max_tokens=2048, temperature=0.1)
     result = {
         "success": True,
         "image": args.image,
+        "provider": VISION_PROVIDER,
         "question": args.question,
         "answer": raw.strip(),
         "model": VISION_MODEL,
