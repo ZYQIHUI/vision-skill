@@ -20,7 +20,7 @@ def _find_dotenv() -> str:
     """定位 .env 文件: 项目根 → scripts 目录 → 当前工作目录"""
     here = Path(__file__).resolve().parent
     candidates = [
-        here.parent / ".env",   # 项目根 (glm-vision-skill/.env)
+        here.parent / ".env",   # 项目根 (vision-skill/.env)
         here / ".env",          # scripts 目录
         Path.cwd() / ".env",    # 当前工作目录
     ]
@@ -70,7 +70,7 @@ API_KEY = os.environ.get("ZHIPU_API_KEY", "")
 VISION_MODEL = os.environ.get("VISION_MODEL", "glm-4.6v-flash")
 
 # 生成参数
-MAX_TOKENS = int(os.environ.get("VISION_MAX_TOKENS", "4096"))
+MAX_TOKENS = int(os.environ.get("VISION_MAX_TOKENS", "20000"))
 TEMPERATURE = float(os.environ.get("VISION_TEMPERATURE", "0.2"))
 REQUEST_TIMEOUT = int(os.environ.get("VISION_TIMEOUT", "90"))
 
@@ -110,3 +110,6 @@ def get_config_summary() -> dict:
         "api_key_set": bool(API_KEY),
         "api_key_preview": f"{API_KEY[:8]}..." if API_KEY else "NOT SET",
     }
+
+if __name__ == "__main__":
+    print(get_config_summary())

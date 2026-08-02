@@ -73,8 +73,8 @@ cp .env.example .env        # Windows: copy .env.example .env
 ### 3. 安装 skill
 
 ```bash
-git clone https://github.com/ZYQIHUI/glm-vision-skill.git
-cd glm-vision-skill
+git clone https://github.com/ZYQIHUI/vision-skill.git
+cd vision-skill
 ./install.sh
 ```
 

@@ -8,8 +8,8 @@
 ## 选项 A: 一键安装(推荐)
 
 ```bash
-git clone https://github.com/ZYQIHUI/glm-vision-skill.git
-cd glm-vision-skill
+git clone https://github.com/ZYQIHUI/vision-skill.git
+cd vision-skill
 ./install.sh
 ```
 
@@ -73,7 +73,7 @@ source ~/.bashrc
 方式二:项目根目录 `.env` 文件(推荐本地开发,已被 `.gitignore` 忽略)
 
 ```bash
-# 在 glm-vision-skill/ 根目录创建 .env
+# 在 vision-skill/ 根目录创建 .env
 ZHIPU_API_KEY=your-key-here
 VISION_MODEL=glm-4.6v-flash    # 可选,默认即此
 ```
