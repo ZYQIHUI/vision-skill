@@ -75,15 +75,17 @@ cp "$SCRIPT_DIR/scripts/requirements.txt" "$INSTALL_DIR/scripts/" 2>/dev/null ||
 [ -d "$SCRIPT_DIR/references" ] && cp -r "$SCRIPT_DIR/references/"* "$INSTALL_DIR/references/" 2>/dev/null || true
 ok "文件复制完成"
 
-if [ -z "$SILICONFLOW_API_KEY" ]; then
-  warn "SILICONFLOW_API_KEY 未设置(默认供应商: 硅基流动)!"
-  echo "  免费注册: https://cloud.siliconflow.cn"
-  echo "  export SILICONFLOW_API_KEY=\"your-key\""
+if [ -z "$AGNES_API_KEY" ]; then
+  warn "AGNES_API_KEY 未设置(默认供应商: Agnes AI)!"
+  echo "  免费注册: https://platform.agnes-ai.com"
+  echo "  export AGNES_API_KEY=\"your-key\""
   echo "  或参考安装目录中的 .env.example 配置"
+elif [ -z "$SILICONFLOW_API_KEY" ]; then
+  warn "备用供应商 SILICONFLOW_API_KEY 未设置(仅切 VISION_PROVIDER=siliconflow 时需要)"
 elif [ -z "$ZHIPU_API_KEY" ]; then
   warn "备用供应商 ZHIPU_API_KEY 未设置(仅切 VISION_PROVIDER=zhipu 时需要)"
 else
-  ok "SILICONFLOW_API_KEY 已设置"
+  ok "AGNES_API_KEY 已设置"
 fi
 
 ( cd "$INSTALL_DIR" && $PYTHON scripts/vision.py config 2>/dev/null && ok "skill 就绪" ) || warn "请检查上方配置"

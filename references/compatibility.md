@@ -15,16 +15,16 @@
 
 ## 上游文本 LLM 组合适配
 
-视觉模型默认 `Qwen/Qwen3.5-4B`(硅基流动,免费);备用 `GLM-4.6V-Flash`(智谱,免费)。以下为文本 LLM × 默认视觉模型的组合:
+视觉模型默认 `agnes-2.5-flash`(Agnes AI,免费);备用 `Qwen/Qwen3.5-4B`(硅基流动,免费)、`GLM-4.6V-Flash`(智谱,免费)。以下为文本 LLM × 默认视觉模型的组合:
 
 | 文本 LLM       | 视觉模型         | 上下文    | 端到端 | 状态         |
 | -------------- | ---------------- | --------- | ------ | ------------ |
-| GLM-5.2        | Qwen/Qwen3.5-4B  | 128K      | ✅     | ✅ verified  |
-| DeepSeek-V3    | Qwen/Qwen3.5-4B  | 128K      | ✅     | ✅ verified  |
-| Qwen2.5-72B    | Qwen/Qwen3.5-4B  | 128K      | ?      | ⚠️ untested  |
-| GPT-4o (text)  | Qwen/Qwen3.5-4B  | 128K      | ?      | ⚠️ untested  |
-| Claude 3.5     | Qwen/Qwen3.5-4B  | 200K      | ?      | ⚠️ untested  |
-| 8K 部署任意模型 | Qwen/Qwen3.5-4B  | 8K        | ⚠️     | ⚠️ 易截断    |
+| GLM-5.2        | agnes-2.5-flash  | 128K      | ✅     | ✅ verified  |
+| DeepSeek-V3    | agnes-2.5-flash  | 128K      | ✅     | ✅ verified  |
+| Qwen2.5-72B    | agnes-2.5-flash  | 128K      | ?      | ⚠️ untested  |
+| GPT-4o (text)  | agnes-2.5-flash  | 128K      | ?      | ⚠️ untested  |
+| Claude 3.5     | agnes-2.5-flash  | 200K      | ?      | ⚠️ untested  |
+| 8K 部署任意模型 | agnes-2.5-flash  | 8K        | ⚠️     | ⚠️ 易截断    |
 
 ## 如何补 verified
 

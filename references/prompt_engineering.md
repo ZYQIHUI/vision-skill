@@ -7,7 +7,7 @@
 
 ### 1. 为什么 prompt 全中文
 
-提示词是喂给视觉模型(默认 `Qwen/Qwen3.5-4B`,备用 `GLM-4.6V-Flash`)的,语言由 VLM 决定,与上游是 GLM-5.2 还是 DeepSeek 无关——上游 LLM 读的是脚本吐出的 JSON,不是 prompt。国产 VLM 中文能力强,纯中文 prompt 既稳又便于维护;中英混杂反而可能触发某些模型的中英切换抖动。英文 prompt 版本作为多语言扩展的字段位预留(`prompts.json` 结构天然支持)。
+提示词是喂给视觉模型(默认 `agnes-2.5-flash`,备用 `Qwen/Qwen3.5-4B` / `GLM-4.6V-Flash`)的,语言由 VLM 决定,与上游是 GLM-5.2 还是 DeepSeek 无关——上游 LLM 读的是脚本吐出的 JSON,不是 prompt。国产 VLM 中文能力强,纯中文 prompt 既稳又便于维护;中英混杂反而可能触发某些模型的中英切换抖动。英文 prompt 版本作为多语言扩展的字段位预留(`prompts.json` 结构天然支持)。
 
 ### 2. 为什么 fast 模式加 few-shot 例答
 

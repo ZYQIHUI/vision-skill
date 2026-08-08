@@ -2,7 +2,7 @@
 """
 基础测试 — Vision Skill
 运行: python tests/test_vision.py
-需要设置 SILICONFLOW_API_KEY(默认供应商)或 ZHIPU_API_KEY 才能跑 API 相关测试。
+需要设置 AGNES_API_KEY(默认供应商)或 SILICONFLOW_API_KEY / ZHIPU_API_KEY 才能跑 API 相关测试。
 """
 
 import json
@@ -68,9 +68,9 @@ def test_parse_json_response():
 
 
 def _clean_env():
-    """清除 ZHIPU_/SILICONFLOW_/VISION_* 环境变量, 避免干扰 .env 测试"""
+    """清除 AGNES_/ZHIPU_/SILICONFLOW_/VISION_* 环境变量, 避免干扰 .env 测试"""
     return {k: v for k, v in os.environ.items()
-            if not k.startswith(("ZHIPU_", "SILICONFLOW_", "VISION_"))}
+            if not k.startswith(("AGNES_", "ZHIPU_", "SILICONFLOW_", "VISION_"))}
 
 
 def _run_config_with_dotenv(dotenv_content, extra_env=None):
@@ -96,21 +96,35 @@ def _run_config_with_dotenv(dotenv_content, extra_env=None):
 
 
 def test_dotenv_config():
-    """测试 .env 文件配置 key/model 生效(默认供应商 siliconflow)"""
+    """测试 .env 文件配置 key/model 生效(默认供应商 agnes)"""
     result = _run_config_with_dotenv(
         "# comment line\n"
-        "VISION_PROVIDER=siliconflow\n"
-        'SILICONFLOW_API_KEY="dotenv-key-123"\n'
-        "VISION_MODEL=glm-dotenv-model\n"
+        "VISION_PROVIDER=agnes\n"
+        'AGNES_API_KEY="dotenv-key-123"\n'
+        "VISION_MODEL=agnes-dotenv-model\n"
     )
     assert result.returncode == 0, result.stderr
     data = json.loads(result.stdout)
     cfg = data["config"]
-    assert cfg["provider"] == "siliconflow", cfg
-    assert cfg["model"] == "glm-dotenv-model", cfg
+    assert cfg["provider"] == "agnes", cfg
+    assert cfg["model"] == "agnes-dotenv-model", cfg
     assert cfg["api_key_preview"] == "dotenv-k...", cfg
     assert data["valid"] is True, data
     print("✅ test_dotenv_config passed")
+
+
+def test_dotenv_config_siliconflow():
+    """测试 .env 中 VISION_PROVIDER=siliconflow 切换备用供应商"""
+    result = _run_config_with_dotenv(
+        "VISION_PROVIDER=siliconflow\n"
+        'SILICONFLOW_API_KEY="sf-key-789"\n'
+    )
+    assert result.returncode == 0, result.stderr
+    cfg = json.loads(result.stdout)["config"]
+    assert cfg["provider"] == "siliconflow", cfg
+    assert cfg["api_key_preview"] == "sf-key-7...", cfg  # 前 8 字符 + ...
+    assert cfg["model"] == "Qwen/Qwen3.5-4B", cfg  # 硅基流动默认模型
+    print("✅ test_dotenv_config_siliconflow passed")
 
 
 def test_dotenv_config_zhipu():
@@ -203,6 +217,7 @@ if __name__ == "__main__":
     test_missing_image()
     test_parse_json_response()
     test_dotenv_config()
+    test_dotenv_config_siliconflow()
     test_dotenv_config_zhipu()
     test_dotenv_env_priority()
     test_throttle_interval()

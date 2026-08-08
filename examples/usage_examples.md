@@ -45,21 +45,29 @@ python scripts/vision.py config
 在项目根目录创建 `.env`(已被 `.gitignore` 忽略,可 `cp .env.example .env`):
 
 ```bash
-VISION_PROVIDER=siliconflow
-SILICONFLOW_API_KEY=your-key-here
-VISION_MODEL=Qwen/Qwen3.5-4B   # 可选,默认即此(硅基流动,免费)
+VISION_PROVIDER=agnes
+AGNES_API_KEY=your-key-here
+VISION_MODEL=agnes-2.5-flash   # 可选,默认即此(Agnes AI,免费)
 ```
 
 然后直接运行,无需 export:
 
 ```bash
-python scripts/vision.py config        # 应显示 provider=siliconflow, model=Qwen/Qwen3.5-4B
+python scripts/vision.py config        # 应显示 provider=agnes, model=agnes-2.5-flash
 python scripts/vision.py understand --image "photo.jpg"
 ```
 
 显式设置的环境变量优先于 `.env`,两者都设时以环境变量为准。
 
-## 示例 7: 切换备用供应商(智谱)
+## 示例 7: 切换备用供应商(硅基流动)
+
+```bash
+VISION_PROVIDER=siliconflow
+SILICONFLOW_API_KEY=your-key-here
+# VISION_MODEL=Qwen/Qwen3.5-4B   # 可选,默认即此(免费)
+```
+
+## 示例 8: 切换备用供应商(智谱)
 
 ```bash
 VISION_PROVIDER=zhipu

@@ -9,9 +9,10 @@ Usage:
 
 Requires:
     - Python 3.8+
-    - An API key for the selected provider (default SiliconFlow, switch with VISION_PROVIDER):
-        SILICONFLOW_API_KEY=...  # provider: siliconflow (default, https://cloud.siliconflow.cn)
-        ZHIPU_API_KEY=...        # provider: zhipu (https://open.bigmodel.cn)
+    - An API key for the selected provider (default Agnes, switch with VISION_PROVIDER):
+        AGNES_API_KEY=...         # provider: agnes (default, https://agnes-ai.com)
+        SILICONFLOW_API_KEY=...   # provider: siliconflow (https://cloud.siliconflow.cn)
+        ZHIPU_API_KEY=...         # provider: zhipu (https://open.bigmodel.cn)
     - No third-party packages required (uses only stdlib)
 """
 

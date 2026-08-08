@@ -2,7 +2,7 @@
 """
 Configuration manager for Vision Skill.
 All settings are controlled via environment variables with sensible defaults.
-Supports multiple vision API providers (SiliconFlow / Zhipu / custom via overrides).
+Supports multiple vision API providers (Agnes / SiliconFlow / Zhipu / custom via overrides).
 """
 
 import os
@@ -12,16 +12,17 @@ from pathlib import Path
 # Version
 # ============================================================
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 # ============================================================
 # .env File Loading — stdlib only (no python-dotenv)
 # ============================================================
 # 用户可在项目根目录放 .env 文件配置 API key 与模型:
-#   SILICONFLOW_API_KEY=your-key    # 硅基流动 (默认供应商)
+#   AGNES_API_KEY=your-key          # Agnes AI (默认供应商, 免费全模态)
+#   SILICONFLOW_API_KEY=your-key    # 硅基流动 (备用)
 #   ZHIPU_API_KEY=your-key          # 智谱 (备用)
-#   VISION_PROVIDER=siliconflow     # 供应商切换 (siliconflow | zhipu)
-#   VISION_MODEL=Qwen/Qwen3.5-4B    # 模型覆盖
+#   VISION_PROVIDER=agnes           # 供应商切换 (agnes | siliconflow | zhipu)
+#   VISION_MODEL=agnes-2.5-flash    # 模型覆盖
 # 优先级: 显式环境变量 > .env 文件 > 供应商预设默认值。
 # 零第三方依赖, 解析规则: KEY=VALUE 每行, 支持 # 注释与可选引号。
 
@@ -66,6 +67,21 @@ load_dotenv_file()
 # 视觉请求统一走 OpenAI 兼容 /chat/completions 格式, 换供应商只换端点+key+模型。
 
 PROVIDERS = {
+    "agnes": {
+        "label": "Agnes AI (AgnesAI-Labs)",
+        "home": "https://agnes-ai.com",
+        "api_base": "https://apihub.agnes-ai.com/v1",
+        "key_env": "AGNES_API_KEY",
+        # 主用视觉模型: agnes-2.5-flash 为文本+视觉语言模型 (image_url 输入),
+        # 512K 上下文 / 65.5K 输出, 当前输入输出均 $0/1M tokens (限时免费)。
+        # key 获取: https://platform.agnes-ai.com 注册后创建。
+        # 免费档 20 RPM (实际), 20 次/分钟 ≈ 3 秒/请求, 脚本内置 2s 节流已基本覆盖。
+        # 用 VISION_MODEL 覆盖为其他模型 ID: agnes-2.0-flash / agnes-1.5-flash 等。
+        "default_model": "agnes-2.5-flash",
+        "max_image_size_mb": 10,
+        "max_image_dimension": 4096,  # 文档未公布明确上限, 保守取 4096
+        "concurrent_requests": 1,
+    },
     "siliconflow": {
         "label": "硅基流动 (SiliconFlow)",
         "home": "https://cloud.siliconflow.cn",
@@ -97,8 +113,8 @@ PROVIDERS = {
 # Active Configuration — 显式环境变量 > 供应商预设
 # ============================================================
 
-# 供应商选择: VISION_PROVIDER=siliconflow|zhipu (默认 siliconflow, 以硅基流动为主)
-VISION_PROVIDER = os.environ.get("VISION_PROVIDER", "siliconflow").strip().lower()
+# 供应商选择: VISION_PROVIDER=agnes|siliconflow|zhipu (默认 agnes, 以 Agnes AI 为主)
+VISION_PROVIDER = os.environ.get("VISION_PROVIDER", "agnes").strip().lower()
 CONFIG_ERRORS: list = []  # 模块加载期的非致命配置错误, validate_config() 会合并上报
 if VISION_PROVIDER not in PROVIDERS:
     CONFIG_ERRORS.append(
@@ -106,7 +122,7 @@ if VISION_PROVIDER not in PROVIDERS:
         f"Supported: {', '.join(sorted(PROVIDERS))}. "
         "Or set VISION_API_BASE + VISION_API_KEY for a custom OpenAI-compatible endpoint."
     )
-    VISION_PROVIDER = "siliconflow"  # 回退到默认供应商, 保证其余配置可加载
+    VISION_PROVIDER = "agnes"  # 回退到默认供应商, 保证其余配置可加载
 _PROVIDER = PROVIDERS[VISION_PROVIDER]
 
 # API 端点 — 显式 VISION_API_BASE 优先, 否则用供应商预设

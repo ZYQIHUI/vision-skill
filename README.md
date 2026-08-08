@@ -1,17 +1,17 @@
 # Vision Skill 🖼️🧠
 
-> **v2.0.0** — 第二版:默认供应商切换为**硅基流动**,主用免费模型 `Qwen/Qwen3.5-4B`(输入/输出 ¥0.000000/K tokens);支持 `VISION_PROVIDER` 一键切回智谱备用。
+> **v2.1.0** — 第三版:默认供应商切换为 **Agnes AI**,主用免费全模态模型 `agnes-2.5-flash`(输入/输出 $0/1M tokens);支持 `VISION_PROVIDER` 一键切回硅基流动 / 智谱备用。
 
 > 国产大模型生态的开源视觉层 —— 任意国产文本模型 + 视觉模型,一行命令接入。
 
-一个即插即用 **Agent Skill**,把纯文本 LLM(GLM-5.2、DeepSeek、Qwen、GPT 等)与视觉模型桥接起来。默认供应商为**硅基流动(SiliconFlow)**,主用模型 **Qwen/Qwen3.5-4B**(原生视觉多模态);亦可一键切回**智谱 GLM-4.6V-Flash**(永久免费)作为备用。遵循 Agent Skills 开放标准,兼容 Claude Code、Codex、Cursor、OpenCode 等所有支持 SKILL.md 的框架;框架不支持该标准时,脚本仍可作为普通 CLI 由调用方手动触发。
+一个即插即用 **Agent Skill**,把纯文本 LLM(GLM-5.2、DeepSeek、Qwen、GPT 等)与视觉模型桥接起来。默认供应商为 **Agnes AI**,主用模型 **agnes-2.5-flash**(全模态、当前完全免费);亦可一键切换**硅基流动 Qwen/Qwen3.5-4B** 或**智谱 GLM-4.6V-Flash**(永久免费)作为备用。遵循 Agent Skills 开放标准,兼容 Claude Code、Codex、Cursor、OpenCode 等所有支持 SKILL.md 的框架;框架不支持该标准时,脚本仍可作为普通 CLI 由调用方手动触发。
 
 ## 为什么需要它
 
 很多强 LLM 是纯文本的——会推理但看不见图。本 skill 作为桥接:
 
 ```
-用户图片 → [vision.py] → Qwen/Qwen3.5-4B (SiliconFlow)
+用户图片 → [vision.py] → agnes-2.5-flash (Agnes AI)
                                 ↓
                   结构化 JSON(场景图 + 推理链)
                                 ↓
@@ -26,18 +26,18 @@
 
 | 文本 LLM(大脑)       | 视觉模型(眼睛)           | 成本      | 验证状态   |
 | --------------------- | ------------------------ | --------- | ---------- |
-| GLM-5.2               | Qwen/Qwen3.5-4B          | 免费      | ✅ verified |
-| DeepSeek-V3           | Qwen/Qwen3.5-4B          | 免费      | ✅ verified |
-| Qwen2.5-72B           | Qwen/Qwen3.5-4B          | 免费      | ⚠️ untested |
-| GPT-4o (text)         | Qwen/Qwen3.5-4B          | 免费      | ⚠️ untested |
-| Claude 3.5 (text)     | Qwen/Qwen3.5-4B          | 免费      | ⚠️ untested |
+| GLM-5.2               | agnes-2.5-flash          | 免费      | ✅ verified |
+| DeepSeek-V3           | agnes-2.5-flash          | 免费      | ✅ verified |
+| Qwen2.5-72B           | agnes-2.5-flash          | 免费      | ⚠️ untested |
+| GPT-4o (text)         | agnes-2.5-flash          | 免费      | ⚠️ untested |
+| Claude 3.5 (text)     | agnes-2.5-flash          | 免费      | ⚠️ untested |
 
 `verified` 表示已在真实环境跑通端到端链路(understand + query 全通过);`untested` 表示架构兼容但尚未在真实环境验证。如实标注,不给全绿假象——欢迎社区补测试报告。
 
 ## 特性
 
-- **免费** —— 默认模型 Qwen/Qwen3.5-4B 在硅基流动**免费**(输入/输出 tokens 均免费)
-- **多供应商** —— `VISION_PROVIDER` 一键切换:硅基流动(默认)/ 智谱(备用,GLM-4.6V-Flash 永久免费)
+- **免费** —— 默认模型 agnes-2.5-flash 在 Agnes AI **免费**(当前输入/输出 tokens 均 $0/1M)
+- **多供应商** —— `VISION_PROVIDER` 一键切换:Agnes(默认)/ 硅基流动(备用)/ 智谱(备用,GLM-4.6V-Flash 永久免费)
 - **零依赖** —— 纯 Python 标准库,无需 pip install
 - **跨框架** —— 任意 Agent Skills 兼容框架可用
 - **深度理解** —— 场景图、空间推理、因果链、情感分析,不只是简单图说
@@ -48,16 +48,16 @@
 
 ### 1. 免费注册并获取 API key
 
-注册 [cloud.siliconflow.cn](https://cloud.siliconflow.cn)(硅基流动),在"API 密钥"页创建 key。
+注册 [platform.agnes-ai.com](https://platform.agnes-ai.com)(Agnes AI,免费),在"API Key 管理"页创建 key。
 
 ### 2. 配置 API key 与模型(二选一)
 
 **方式 A:环境变量(推荐 CI/服务端)**
 
 ```bash
-export VISION_PROVIDER="siliconflow"        # 可选,默认即此
-export SILICONFLOW_API_KEY="your-key-here"
-export VISION_MODEL="Qwen/Qwen3.5-4B"        # 可选,默认即此
+export VISION_PROVIDER="agnes"        # 可选,默认即此
+export AGNES_API_KEY="your-key-here"
+export VISION_MODEL="agnes-2.5-flash"  # 可选,默认即此
 # 同步进 ~/.bashrc 或 ~/.zshrc 持久化
 ```
 
@@ -68,9 +68,9 @@ export VISION_MODEL="Qwen/Qwen3.5-4B"        # 可选,默认即此
 ```bash
 cp .env.example .env        # Windows: copy .env.example .env
 # 然后编辑 .env:
-#   VISION_PROVIDER=siliconflow        # 默认
-#   SILICONFLOW_API_KEY=your-key-here  # 必填
-#   VISION_MODEL=Qwen/Qwen3.5-4B       # 可选,默认即此
+#   VISION_PROVIDER=agnes              # 默认
+#   AGNES_API_KEY=your-key-here        # 必填
+#   VISION_MODEL=agnes-2.5-flash       # 可选,默认即此
 ```
 
 `.env` 支持 `#` 注释与可选引号(`KEY="value"`)。优先级:显式环境变量 > `.env` > 供应商默认值——两者都设时以环境变量为准。
@@ -95,28 +95,19 @@ cd vision-skill
 
 | 项                   | 默认值                                 |
 | -------------------- | -------------------------------------- |
-| 供应商               | 硅基流动 SiliconFlow                   |
-| 模型                 | `Qwen/Qwen3.5-4B`(原生视觉多模态)      |
-| 上下文               | 262,144 tokens                         |
+| 供应商               | Agnes AI (AgnesAI-Labs)                |
+| 模型                 | `agnes-2.5-flash`(文本+视觉语言模型)   |
+| 上下文               | 524,288 tokens (512K)                  |
 | 图片输入             | 支持 URL 或 base64(≤10MB)              |
 
-**费用**:Qwen/Qwen3.5-4B 在硅基流动**免费**——控制台价格页显示输入/输出均为 **¥0.000000 / K Tokens**(计费条目: `free-text-model.online.input-tokens` / `free-text-model.online.output-tokens`)。仅受免费配额/限流约束。
+**费用**:agnes-2.5-flash 在 Agnes AI 当前**免费**——官方定价显示输入/输出均为 **$0 / 1M tokens**(限时促销价,随时可能调整)。免费档 20 RPM(实际执行),仅受配额/限流约束。
 
-同系列其他规模模型仍按量计费(元/百万 tokens),仅供参考:
+> 免费额度与限流规则以 [platform.agnes-ai.com](https://platform.agnes-ai.com) 控制台实时展示为准。
 
-| 模型               | 输入(元/M tokens) | 输出(元/M tokens) |
-| ------------------ | ----------------- | ----------------- |
-| Qwen3.5-397B-A17B  | 1.20              | 7.20              |
-| Qwen3.5-122B-A10B  | 0.80              | 6.40              |
-| Qwen3.5-35B-A3B    | 0.40              | 3.20              |
-| Qwen3.5-27B        | 0.60              | 4.80              |
-| **Qwen3.5-4B(默认)** | **免费**        | **免费**          |
-
-> 免费额度与限流规则以 [cloud.siliconflow.cn](https://cloud.siliconflow.cn) 控制台实时展示为准。
-
-**想用其他模型?** 可选:
-- 切备用供应商: `.env` 中 `VISION_PROVIDER=zhipu` + `ZHIPU_API_KEY`,使用 **GLM-4.6V-Flash**(智谱永久免费,限 1 并发)
-- 硅基流动其他多模态模型(OCR/翻译类): `VISION_MODEL=PaddlePaddle/PaddleOCR-VL-1.5` 或 `tencent/Hunyuan-MT-7B`
+**想用其他模型/供应商?** 可选:
+- 切备用供应商 1(硅基流动): `.env` 中 `VISION_PROVIDER=siliconflow` + `SILICONFLOW_API_KEY`,使用 **Qwen/Qwen3.5-4B**(免费)
+- 切备用供应商 2(智谱): `.env` 中 `VISION_PROVIDER=zhipu` + `ZHIPU_API_KEY`,使用 **GLM-4.6V-Flash**(智谱永久免费,限 1 并发)
+- Agnes 其他文本模型: `VISION_MODEL=agnes-2.0-flash` / `agnes-1.5-flash`
 
 > 注意:硅基流动的 `Qwen/Qwen2.5-VL-*` 免费系列已于 2026-03/04 下线,勿再使用。
 
@@ -166,11 +157,12 @@ python scripts/vision.py config
 
 | 变量                  | 默认值                                 | 说明                   |
 | --------------------- | -------------------------------------- | ---------------------- |
-| `VISION_PROVIDER`     | `siliconflow`                          | 供应商: `siliconflow` / `zhipu` |
-| `SILICONFLOW_API_KEY` | (必填,默认供应商)                      | cloud.siliconflow.cn 的 key |
+| `VISION_PROVIDER`     | `agnes`                                | 供应商: `agnes` / `siliconflow` / `zhipu` |
+| `AGNES_API_KEY`       | (必填,默认供应商)                      | platform.agnes-ai.com 的 key |
+| `SILICONFLOW_API_KEY` | (切 siliconflow 时必填)                | cloud.siliconflow.cn 的 key |
 | `ZHIPU_API_KEY`       | (切 zhipu 时必填)                      | open.bigmodel.cn 的 key |
-| `VISION_MODEL`        | `Qwen/Qwen3.5-4B`(硅基流动) / `glm-4.6v-flash`(智谱) | 视觉模型,显式设置时覆盖供应商默认 |
-| `VISION_API_BASE`     | `https://api.siliconflow.cn/v1`(硅基流动) / `https://open.bigmodel.cn/api/paas/v4`(智谱) | API 端点,显式设置时覆盖供应商默认 |
+| `VISION_MODEL`        | `agnes-2.5-flash`(Agnes) / `Qwen/Qwen3.5-4B`(硅基流动) / `glm-4.6v-flash`(智谱) | 视觉模型,显式设置时覆盖供应商默认 |
+| `VISION_API_BASE`     | `https://apihub.agnes-ai.com/v1`(Agnes) / `https://api.siliconflow.cn/v1`(硅基流动) / `https://open.bigmodel.cn/api/paas/v4`(智谱) | API 端点,显式设置时覆盖供应商默认 |
 | `VISION_API_KEY`      | (空)                                   | 统一 key 覆盖,优先于供应商专属 key |
 | `VISION_MAX_TOKENS`   | `20000`                                | 最大输出 token         |
 | `VISION_TEMPERATURE`  | `0.2`                                  | 生成温度               |
@@ -181,14 +173,14 @@ python scripts/vision.py config
 > - 阿里百炼: `VISION_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1` + `VISION_MODEL=qwen-vl-max`
 > - 自部署 Ollama: `VISION_API_BASE=http://<服务器IP>:11434/v1` + `VISION_MODEL=qwen2.5-vl:7b`
 
-> **关于 429 限流**: 硅基流动按配额限流,智谱 GLM-4.6V-Flash 免费但限 1 并发。脚本已内置**请求节流**(两次调用间隔 ≥ `VISION_REQUEST_INTERVAL` 秒)与**智能重试**(尊重 `Retry-After` 头、指数退避 5s 起步封顶 60s)。连续手动测试时仍建议两次调用间稍留间隔。
+> **关于 429 限流**: Agnes 免费档 20 RPM(约 3 秒/请求),硅基流动按配额限流,智谱 GLM-4.6V-Flash 免费但限 1 并发。脚本已内置**请求节流**(两次调用间隔 ≥ `VISION_REQUEST_INTERVAL` 秒)与**智能重试**(尊重 `Retry-After` 头、指数退避 5s 起步封顶 60s)。连续手动测试时仍建议两次调用间稍留间隔。
 
-> **关于思维链模型**: 部分视觉模型(Qwen3.5 系列等)默认输出超长思维链,可能吃光 `max_tokens` 预算导致 `answer` 为空。脚本对硅基流动已默认关闭思维链(`enable_thinking=false`,更快更省),understand 输出 JSON 解析失败会自动重试。
+> **关于思维链模型**: 部分视觉模型(如硅基流动 Qwen3.5 系列)默认输出超长思维链,可能吃光 `max_tokens` 预算导致 `answer` 为空。脚本对硅基流动已默认关闭思维链(`enable_thinking=false`,更快更省);Agnes 支持 thinking 模式但脚本默认不开启。understand 输出 JSON 解析失败会自动重试。
 
 ## 要求
 
 - Python 3.8+
-- 硅基流动 API key(默认)或智谱 API key(备用)
+- Agnes API key(默认)或硅基流动/智谱 API key(备用)
 - 无需任何第三方 Python 包
 
 ## 边界声明
@@ -209,6 +201,7 @@ MIT —— 见 [LICENSE](LICENSE)
 
 ## Acknowledgments
 
+- [Agnes AI](https://agnes-ai.com) 提供 agnes-2.5-flash 免费全模态模型
 - [硅基流动](https://siliconflow.cn) 提供 Qwen/Qwen3.5-4B 等视觉模型
 - [智谱 AI](https://open.bigmodel.cn) 提供 GLM-4.6V-Flash 免费模型
 - [Anthropic](https://anthropic.com) 提出 Agent Skills 开放标准
